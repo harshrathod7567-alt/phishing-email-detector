@@ -30,19 +30,18 @@ def extract_sender(content):
     return match.group(1).strip() if match else "Unknown"
 
 def check_suspicious_domain(sender):
-    # look for lookalike tricks: digits replacing letters (e.g. paypa1 instead of paypal)
     has_digit_swap = bool(re.search(r'[a-z]+\d[a-z]*\.(com|net|org)', sender.lower()))
     has_suspicious_tld = any(tld in sender.lower() for tld in SUSPICIOUS_TLDS)
     return has_digit_swap or has_suspicious_tld
 
 def calculate_risk_score(urgency_hits, links, suspicious_sender):
     score = 0
-    score += len(urgency_hits) * 10  # each urgency phrase adds risk
-    score += len(links) * 5          # each link adds a bit of risk
+    score += len(urgency_hits) * 10
+    score += len(links) * 5
     if suspicious_sender:
-        score += 40                  # spoofed-looking domain is a big red flag
+        score += 40
     
-    score = min(score, 100)  # cap at 100
+    score = min(score, 100)
     
     if score >= 60:
         verdict = "LIKELY PHISHING"
@@ -53,7 +52,23 @@ def calculate_risk_score(urgency_hits, links, suspicious_sender):
     
     return score, verdict
 
-email_content = read_email('sample_phishing.eml')
+def write_report(filename, sender, urgency_hits, links, suspicious_sender, score, verdict, output_file="phishing_report.txt"):
+    with open(output_file, 'w') as f:
+        f.write(f"=== Phishing Analysis Report: {filename} ===\n\n")
+        f.write(f"Sender: {sender}\n")
+        f.write(f"Suspicious sender domain: {suspicious_sender}\n\n")
+        f.write(f"Urgency phrases found ({len(urgency_hits)}):\n")
+        for phrase in urgency_hits:
+            f.write(f"  - {phrase}\n")
+        f.write(f"\nLinks found ({len(links)}):\n")
+        for link in links:
+            f.write(f"  - {link}\n")
+        f.write(f"\nRisk Score: {score}/100\n")
+        f.write(f"Verdict: {verdict}\n")
+    print(f"Report saved to {output_file}")
+
+filename = 'sample_phishing.eml'
+email_content = read_email(filename)
 
 sender = extract_sender(email_content)
 urgency_hits = find_urgency_language(email_content)
@@ -62,9 +77,5 @@ suspicious_sender = check_suspicious_domain(sender)
 
 score, verdict = calculate_risk_score(urgency_hits, links, suspicious_sender)
 
-print(f"Sender: {sender}")
-print(f"Suspicious sender domain: {suspicious_sender}")
-print(f"Urgency phrases found: {len(urgency_hits)}")
-print(f"Links found: {len(links)}")
-print(f"\nRisk Score: {score}/100")
-print(f"Verdict: {verdict}")
+print(f"Risk Score: {score}/100 — {verdict}")
+write_report(filename, sender, urgency_hits, links, suspicious_sender, score, verdict)
