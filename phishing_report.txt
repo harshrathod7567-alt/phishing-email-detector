@@ -1,0 +1,20 @@
+=== Phishing Analysis Report: sample_phishing.eml ===
+
+Sender: "PayPal Security" <security@paypa1-verify.com>
+Suspicious sender domain: False
+
+Urgency phrases found (8):
+  - urgent
+  - immediately
+  - verify your identity
+  - account has been suspended
+  - permanently closed
+  - click the link
+  - failure to act
+  - within 24 hours
+
+Links found (1):
+  - http://paypa1-secure-verify.com/login
+
+Risk Score: 85/100
+Verdict: LIKELY PHISHING
